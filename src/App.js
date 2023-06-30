@@ -1,25 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import Form from './components/Form'
+import Details from './components/Details'
 
 function App() {
+  const [user, setUser] = useState(null)
+  const [repositories, setRepositories] = useState([])
+
+  const fetchUser = (username) => {
+    fetch(`https://api.github.com/users/${username}`)
+      .then((response) => response.json())
+      .then((userData) => {
+        setUser(userData)
+
+        return fetch(`https://api.github.com/users/${username}/repos`)
+      })
+      .then((response) => response.json())
+      .then((reposData) => {
+        setRepositories(reposData)
+      })
+      .catch((error) => {
+        console.error('Error:', error)
+      })
+  }
+
+  const handleReset = () => {
+    setUser(null)
+    setRepositories([])
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {user ? (
+        <Details
+          user={user}
+          repositories={repositories}
+          onReset={handleReset}
+        />
+      ) : (
+        <Form onSubmit={fetchUser} />
+      )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
